@@ -154,6 +154,12 @@ class RuleBasedRMProxy:
                 # 1.从模型生成的response中提取模型的最终答案(hint: 分析sft数据输出最终答案的格式，使用self.boxed_pattern提取答案)
                 # 2.用prompt2answer获取prompt对应的groundtruth
                 # 3.用math_equal函数评估response是否正确，并据此给出reward
+                match = self.boxed_pattern.search(response)
+                if match:
+                    groundtruth = self.prompt2answer.get(prompt, None)
+                    score = math_equal(groundtruth, response)
+                else:
+                    score = -1.0
                 ######################
                 return score
                 

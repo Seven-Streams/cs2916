@@ -71,8 +71,13 @@ class PolicyLoss(nn.Module):
     ) -> torch.Tensor:
         loss=None
         ######################
-        # 根据deepseekmath, deepseek r1中的paper，实现loss函数
-        # 不需要实现klloss
+        lhs = log_probs - old_log_probs
+        if self.clip_eps is not None:
+            rhs = torch.clamp(lhs, -self.clip_eps, self.clip_eps)
+            loss = torch.min(lhs.exp() * advantages, rhs.exp() * advantages)
+        else:
+            loss = advantages * lhs.exp()
+        loss = masked_mean(-loss, action_mask, dim=-1).mean()
         ######################
         return loss
 
